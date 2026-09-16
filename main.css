@@ -86,7 +86,14 @@ body::before {
     z-index: 0;
     transition: background-image 0.4s;
 }
-
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: 32px;
+    padding-right: 32px;
+    box-sizing: border-box;
+}
 /* Corner decorations */
 .corner-tl,
 .corner-br {
@@ -205,9 +212,10 @@ main {
 }
 
 section {
-    max-width: 1000px;
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 80px 40px;
+    padding: 0 32px;
 }
 
 .section-label {
@@ -220,6 +228,7 @@ section {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-top: 60px;
 }
 
 .section-label::before {
@@ -433,7 +442,7 @@ section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1px;
-    background: var(--line);
+    /* background: var(--line); */
 }
 
 .card {
@@ -769,11 +778,12 @@ section {
     gap: 1px;
     background: var(--line);
     margin-bottom: 24px;
-    /* Tăng khoảng cách giữa các card cho thoáng */
     position: relative;
     overflow: hidden;
     border: 1px solid transparent;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .rp-card:last-child {
@@ -831,22 +841,18 @@ section {
 
 /* Hình ảnh bớt thô */
 .rp-img-wrap {
-    flex-shrink: 0;
-    width: 280px;
-    /* Tăng nhẹ độ rộng ảnh để cân bằng với text */
-    background: var(--card-bg);
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
     overflow: hidden;
-    position: relative;
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .rp-img-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
     display: block;
-    filter: grayscale(40%) contrast(110%);
-    /* Tăng độ ngầu cho ảnh ban đầu */
-    transition: transform 0.5s ease, filter 0.5s ease;
+    object-fit: cover;
 }
 
 /* Khi hover: Ảnh vừa mất grayscale vừa zoom nhẹ vào rất điện ảnh */
@@ -940,7 +946,7 @@ section {
 /* PDF Link Box thay thế cho Image Box bên phải */
 .rp-pdf-link-wrap {
     flex-shrink: 0;
-    width: 240px;
+    width: 100%;
     background: rgba(255, 255, 255, 0.02);
     border-left: 1px solid var(--line);
     display: flex;
@@ -1292,4 +1298,296 @@ footer {
     font-size: 12px;
     color: var(--text2);
     letter-spacing: 0.15em;
+}
+
+
+/* ================================
+   PROJECT CARD
+================================ */
+
+.rp-card {
+    display: grid;
+    grid-template-columns: 1.35fr 0.65fr;
+    min-height: 620px;
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.025);
+
+    transition:
+        border-color 0.3s ease,
+        transform 0.3s ease,
+        background 0.3s ease;
+}
+
+.rp-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+
+/* ================================
+   CONTENT
+================================ */
+
+.rp-body {
+    padding: 42px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rp-label,
+.rp-mini-label {
+    font-family: monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.rp-label {
+    font-size: 11px;
+    opacity: 0.5;
+    margin-bottom: 18px;
+}
+
+.rp-body h3 {
+    margin: 0 0 18px;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+
+.rp-intro {
+    max-width: 680px;
+    margin: 0 0 28px;
+    font-size: 15px;
+    line-height: 1.7;
+    opacity: 0.68;
+}
+
+
+/* ================================
+   SECTIONS
+================================ */
+
+.rp-section {
+    margin-top: 24px;
+}
+
+.rp-mini-label {
+    font-size: 10px;
+    opacity: 0.45;
+    margin-bottom: 12px;
+}
+
+
+/* ================================
+   FEATURE LIST
+================================ */
+
+.rp-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rp-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rp-list strong {
+    font-size: 13px;
+}
+
+.rp-list span {
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.55;
+}
+
+
+/* ================================
+   TECHNOLOGY TAGS
+================================ */
+
+.rp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.rp-tags span {
+    padding: 6px 9px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+
+    opacity: 0.7;
+}
+
+
+/* ================================
+   RESULTS
+================================ */
+
+.rp-stats {
+    display: flex;
+    gap: 34px;
+}
+
+.rp-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rp-stat strong {
+    font-size: 25px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.rp-stat span {
+    font-size: 10px;
+    line-height: 1.4;
+    opacity: 0.5;
+    max-width: 110px;
+}
+
+
+/* ================================
+   VIEW DOCUMENT BUTTON
+================================ */
+
+.rp-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    width: fit-content;
+    min-width: 170px;
+
+    margin-top: 32px;
+    padding: 11px 15px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    color: inherit;
+    text-decoration: none;
+
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.rp-button span {
+    font-size: 16px;
+    transition: transform 0.25s ease;
+}
+
+.rp-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateX(3px);
+}
+
+.rp-button:hover span {
+    transform: translate(2px, -2px);
+}
+
+
+/* ================================
+   IMAGE
+================================ */
+
+.rp-img-wrap {
+    min-height: 100%;
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.rp-img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+    object-fit: cover;
+
+    opacity: 0.8;
+    filter: grayscale(100%);
+
+    transition:
+        transform 0.5s ease,
+        opacity 0.5s ease,
+        filter 0.5s ease;
+}
+
+.rp-card:hover .rp-img {
+    transform: scale(1.035);
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 900px) {
+    .rp-card {
+        grid-template-columns: 1fr;
+    }
+
+    .rp-img-wrap {
+        height: 320px;
+        order: -1;
+    }
+
+    .rp-body {
+        padding: 30px;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .rp-body {
+        padding: 24px;
+    }
+
+    .rp-list {
+        grid-template-columns: 1fr;
+    }
+
+    .rp-stats {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .rp-stat strong {
+        font-size: 22px;
+    }
+
+    .rp-img-wrap {
+        height: 240px;
+    }
 }

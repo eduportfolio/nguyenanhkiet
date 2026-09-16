@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostureAI - AI Posture & Vision Health Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            cyan: '#06b6d4',
+                            purple: '#6366f1',
+                            emerald: '#10b981',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        '2xl': '20px',
+                        '3xl': '24px'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN for Statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Glassmorphism and Utility Styles -->
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -10px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+
+        /* Pulse glowing effects */
+        @keyframes subtle-glow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .glow-effect {
+            animation: subtle-glow 4s infinite ease-in-out;
+        }
+
+        /* Skeleton Joint Animation */
+        .joint-node {
+            transition: all 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Main Outer Container -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- LEFT SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 shrink-0">
+            <div>
+                <!-- LOGO AREA (Upper Left Corner) -->
+                <div class="p-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+                    <a href="#" onclick="switchTab('dashboard')" class="flex items-center group w-full transition-transform hover:scale-[1.02]">
+                        <!-- Exact Vector Representation of PostureAI Smart Logo -->
+                        <svg class="w-full h-auto max-h-12" viewBox="0 0 320 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoHeadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#0284c7" />
+                                    <stop offset="50%" stop-color="#0369a1" />
+                                    <stop offset="100%" stop-color="#0f172a" />
+                                </linearGradient>
+                                <linearGradient id="logoLensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#38bdf8" />
+                                    <stop offset="100%" stop-color="#06b6d4" />
+                                </linearGradient>
+                                <linearGradient id="logoBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#0284c7" />
+                                    <stop offset="100%" stop-color="#00c8ff" />
+                                </linearGradient>
+                                <linearGradient id="logoAiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#00a8e8" />
+                                    <stop offset="100%" stop-color="#00f5d4" />
+                                </linearGradient>
+                                <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="2.5" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+
+                            <!-- LOGO GRAPHIC MARK (Left Side) -->
+                            <g transform="translate(2, 2)">
+                                <!-- Chair Back and Seat -->
+                                <path d="M12 28 C10 42 16 58 24 64 C30 68 45 68 56 68" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.9" />
+
+                                <!-- Seated Body Outline (Spine, Neck, Thighs, Legs) -->
+                                <path d="M30 25 C26 35 24 48 30 58 C34 62 48 62 62 62 L67 76 L75 76" stroke="url(#logoBodyGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+                                <!-- Spine Vertebrae Segments -->
+                                <g opacity="0.95">
+                                    <rect x="23" y="28" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                    <rect x="22" y="33" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                    <rect x="21" y="38" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                    <rect x="21" y="43" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                    <rect x="22" y="48" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                    <rect x="24" y="53" width="6" height="3" rx="1.5" fill="#38bdf8" />
+                                </g>
+
+                                <!-- Arm Resting Forward -->
+                                <path d="M32 38 C38 42 45 42 58 42" stroke="#0284c7" stroke-width="4" stroke-linecap="round" fill="none" />
+
+                                <!-- Camera Head Outer Ring -->
+                                <circle cx="34" cy="15" r="11" fill="url(#logoHeadGrad)" stroke="#0284c7" stroke-width="1.5" />
+                                <!-- Inner Lens Glow -->
+                                <circle cx="34" cy="15" r="7" fill="url(#logoLensGrad)" />
+                                <circle cx="34" cy="15" r="3.5" fill="#0f172a" />
+                                <circle cx="32.5" cy="13.5" r="1.5" fill="#ffffff" />
+
+                                <!-- AI Node Constellation radiating from face -->
+                                <g stroke="#38bdf8" stroke-width="1" fill="#38bdf8">
+                                    <line x1="43" y1="12" x2="49" y2="9" />
+                                    <line x1="44" y1="16" x2="52" y2="15" />
+                                    <line x1="42" y1="19" x2="48" y2="22" />
+                                    <circle cx="49" cy="9" r="2" />
+                                    <circle cx="52" cy="15" r="2.5" />
+                                    <circle cx="48" cy="22" r="1.8" />
+                                    <line x1="49" y1="9" x2="52" y2="15" stroke-width="0.8" />
+                                </g>
+
+                                <!-- Wave / Trend Graph line underneath feet -->
+                                <path d="M2 78 Q 15 84, 25 74 T 50 80 T 78 70" stroke="#0284c7" stroke-width="2.5" fill="none" stroke-linecap="round" />
+                                <path d="M10 82 Q 22 88, 32 78 T 60 82 T 84 68" stroke="#38bdf8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7" />
+                                <circle cx="25" cy="74" r="2.5" fill="#0284c7" />
+                                <circle cx="50" cy="80" r="2.5" fill="#0284c7" />
+                                <circle cx="78" cy="70" r="3" fill="#38bdf8" />
+                            </g>
+
+                            <!-- LOGO TEXT (Right Side) -->
+                            <g transform="translate(90, 6)">
+                                <!-- "Posture" -->
+                                <text x="0" y="44" class="fill-slate-900 dark:fill-white" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="36" letter-spacing="-0.5">Posture</text>
+                                
+                                <!-- "AI" -->
+                                <text x="134" y="44" fill="url(#logoAiGrad)" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="36" letter-spacing="-0.5" filter="url(#cyanGlow)">AI</text>
+
+                                <!-- Subtitle "SMART POSTURE MONITORING" -->
+                                <text x="2" y="63" class="fill-slate-600 dark:fill-slate-300" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9.5" letter-spacing="1.4">SMART POSTURE MONITORING</text>
+                            </g>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- SIDEBAR NAV LINKS -->
+                <nav class="p-3 space-y-1 mt-2">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 shadow-sm border border-indigo-100 dark:border-indigo-900/40">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span>Dashboard</span>
+                    </button>
+
+                    <button onclick="switchTab('posture-monitor')" id="nav-posture-monitor" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="scan-face" class="w-5 h-5"></i>
+                            <span>Posture Monitor</span>
+                        </div>
+                        <span class="flex h-2 w-2 relative">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                    </button>
+
+                    <button onclick="switchTab('vision-test')" id="nav-vision-test" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                        <span>Vision Test</span>
+                    </button>
+
+                    <button onclick="switchTab('screen-time')" id="nav-screen-time" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                        <span>Screen Time</span>
+                    </button>
+
+                    <button onclick="switchTab('exercise-coach')" id="nav-exercise-coach" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                            <span>Exercise Coach</span>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 rounded-full">4 Ready</span>
+                    </button>
+
+                    <button onclick="switchTab('statistics')" id="nav-statistics" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        <span>Statistics</span>
+                    </button>
+
+                    <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span>Settings</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- SIDEBAR FOOTER CARD -->
+            <div class="p-3">
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 dark:from-indigo-950/40 dark:to-slate-900 border border-indigo-200/50 dark:border-indigo-800/40">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <div class="p-2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white">AI Engine Active</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">MediaPipe Spine v2.4</div>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-[92%] rounded-full"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span>Model Precision</span>
+                        <span class="font-bold text-indigo-600 dark:text-indigo-400">98.4%</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN WORKSPACE CONTENT CONTAINER -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100/60 dark:bg-slate-950">
+            
+            <!-- TOP NAVIGATION BAR -->
+            <header class="h-16 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md flex items-center justify-between px-6 z-20 shrink-0">
+                <!-- Search Bar -->
+                <div class="flex items-center gap-3 w-72 md:w-96">
+                    <div class="relative w-full">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Search insights, exercises, or settings... (⌘K)" class="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all">
+                    </div>
+                </div>
+
+                <!-- Right Top Controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Live Status Badge -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="topbar-status-text">Good Ergonomics</span>
+                    </div>
+
+                    <!-- Light / Dark Mode Toggle Button -->
+                    <button id="theme-toggle" onclick="toggleDarkMode()" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-800 transition-all">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-indigo-600"></i>
+                    </button>
+
+                    <!-- Notifications Button & Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-800 transition-all relative">
+                            <i data-lucide="bell" class="w-4 h-4"></i>
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                        </button>
+
+                        <!-- Notification Dropdown -->
+                        <div id="notifications-panel" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-4 z-50">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-sm">Notifications</h4>
+                                <span class="text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">2 New</span>
+                            </div>
+                            <div class="space-y-2 text-xs">
+                                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex gap-2.5">
+                                    <div class="p-1.5 bg-blue-500/10 text-blue-500 rounded-lg shrink-0 h-fit">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200">20-20-20 Eye Break Due</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">You've been focusing for 20 mins. Look 20ft away!</p>
+                                    </div>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex gap-2.5">
+                                    <div class="p-1.5 bg-amber-500/10 text-amber-500 rounded-lg shrink-0 h-fit">
+                                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200">Postural Slouch Detected</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">12 mins ago: 15° forward neck tilt recorded.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+                    <!-- User Profile Button -->
+                    <div class="flex items-center gap-2.5 cursor-pointer pl-1">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="User Profile" class="w-9 h-9 rounded-xl object-cover ring-2 ring-indigo-500/30">
+                        <div class="hidden md:flex flex-col">
+                            <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight">Alex Rivera</span>
+                            <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400">Pro Student</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN SCROLLABLE DASHBOARD VIEW -->
+            <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- TAB 1: DASHBOARD MAIN PAGE -->
+                <section id="tab-dashboard" class="tab-content space-y-6">
+                    
+                    <!-- Welcome Header Banner -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="relative z-10">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-2">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                <span>AI Assistant Active</span>
+                            </div>
+                            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Good afternoon, Alex 👋</h1>
+                            <p class="text-indigo-100 text-xs md:text-sm mt-1 max-w-xl">Your ergonomics score is up by <span class="font-bold text-cyan-200">+14%</span> today. Keep up the great neck alignment!</p>
+                        </div>
+                        <div class="flex items-center gap-3 relative z-10">
+                            <button onclick="switchTab('posture-monitor')" class="px-4 py-2.5 rounded-2xl bg-white text-indigo-600 hover:bg-indigo-50 font-bold text-xs shadow-md transition-all flex items-center gap-2">
+                                <i data-lucide="video" class="w-4 h-4"></i>
+                                <span>Launch AI Camera</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TOP METRICS & STATUS CARDS (Apple Health Style) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- CARD 1: SCREEN TIME CARD -->
+                        <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2.5 rounded-2xl bg-blue-500/10 text-blue-500">
+                                        <i data-lucide="clock" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Screen Time</h3>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Daily limit: 6h 00m</p>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full">Optimal</span>
+                            </div>
+
+                            <!-- Circular Progress Display -->
+                            <div class="flex items-center justify-around py-2">
+                                <div class="relative w-28 h-28 flex items-center justify-center">
+                                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <path class="text-slate-200 dark:text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path class="text-blue-500" stroke-dasharray="70, 100" stroke-linecap="round" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    </svg>
+                                    <div class="absolute text-center flex flex-col">
+                                        <span class="text-xl font-extrabold text-slate-900 dark:text-white">4h 15m</span>
+                                        <span class="text-[10px] text-slate-400 font-medium">Logged</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-xs">
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block">Remaining</span>
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">1h 45m</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block">Avg Break</span>
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">Every 28m</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Tracking Active</span>
+                                <button onclick="toggleScreenTimePause()" id="btn-pause-screentime" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition-all">
+                                    Pause
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 2: EYE CARE CARD (20-20-20 Rule) -->
+                        <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-500">
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Eye Care Assistant</h3>
+                                        <p class="text-[11px] text-indigo-500 dark:text-indigo-400 font-semibold">20-20-20 Rule Timer</p>
+                                    </div>
+                                </div>
+                                <span id="eye-timer-badge" class="px-2.5 py-1 text-[10px] font-extrabold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-full">Focusing</span>
+                            </div>
+
+                            <div class="py-3 text-center">
+                                <div id="eye-timer-display" class="text-3xl font-extrabold text-slate-900 dark:text-white font-mono tracking-wider">
+                                    18:42
+                                </div>
+                                <p id="eye-timer-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-1">20 min Focus → 20 sec Break</p>
+                                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+                                    <div id="eye-timer-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-[82%] transition-all duration-1000"></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 flex items-center gap-2">
+                                <button id="btn-start-eyecare" onclick="toggleEyeTimer()" class="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-1.5">
+                                    <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                    <span>Start Eye Timer</span>
+                                </button>
+                                <button onclick="resetEyeTimer()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300">
+                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CARD 3: POSTURE STATUS CARD -->
+                        <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-500">
+                                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Posture Status</h3>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Real-Time Ergonomics</p>
+                                    </div>
+                                </div>
+                                <div id="dashboard-posture-badge" class="px-2.5 py-1 text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 rounded-full flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span>Good</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between py-2 px-2">
+                                <!-- Interactive Silhouette Vector -->
+                                <div class="w-16 h-20 relative flex items-center justify-center">
+                                    <svg viewBox="0 0 100 120" class="w-full h-full text-indigo-500">
+                                        <!-- Spine Curve -->
+                                        <path id="svg-spine-line" d="M50 20 Q50 60 50 100" fill="none" stroke="#10b981" stroke-width="6" stroke-linecap="round"/>
+                                        <!-- Head Node -->
+                                        <circle id="svg-head-node" cx="50" cy="18" r="12" fill="#3b82f6"/>
+                                        <circle cx="50" cy="18" r="4" fill="#ffffff"/>
+                                        <!-- Shoulder Nodes -->
+                                        <circle cx="30" cy="45" r="5" fill="#6366f1"/>
+                                        <circle cx="70" cy="45" r="5" fill="#6366f1"/>
+                                        <line x1="30" y1="45" x2="70" y2="45" stroke="#6366f1" stroke-width="3"/>
+                                    </svg>
+                                </div>
+
+                                <div class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 flex-1 pl-4">
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Head Angle:</span>
+                                        <span id="dash-head-angle" class="font-bold text-emerald-500">12° (Optimal)</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Back Alignment:</span>
+                                        <span id="dash-back-align" class="font-bold text-emerald-500">96% Straight</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Screen Dist:</span>
+                                        <span id="dash-screen-dist" class="font-bold text-slate-800 dark:text-slate-200">64 cm</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="switchTab('posture-monitor')" class="w-full mt-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-1.5">
+                                <span>Calibrate Posture</span>
+                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: AI EXERCISE RECOMMENDATION SECTION -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="sparkles" class="w-5 h-5 text-indigo-500"></i>
+                                    Recommended Exercises for You
+                                </h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Personalized micro-workouts to reduce neck tension and eye fatigue.</p>
+                            </div>
+                            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline" onclick="switchTab('exercise-coach')">View All (8) →</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            
+                            <!-- EXERCISE 1 -->
+                            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between relative group hover:border-indigo-500/50 transition-all">
+                                <div>
+                                    <div class="w-full h-28 rounded-xl bg-gradient-to-tr from-indigo-500/10 to-blue-500/10 flex items-center justify-center mb-3 relative overflow-hidden">
+                                        <i data-lucide="refresh-cw" class="w-10 h-10 text-indigo-500 group-hover:rotate-180 transition-transform duration-700"></i>
+                                        <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold bg-white/80 dark:bg-slate-900/80 rounded-full text-indigo-600">30s</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-900 dark:text-white">Shoulder Rolls</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Rotate shoulders backwards smoothly to relieve upper spine tension.</p>
+                                </div>
+                                <button onclick="startExerciseModal('Shoulder Rolls', 30)" class="mt-4 w-full py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-300 font-bold text-xs transition-all flex items-center justify-center gap-1">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    <span>Start (30s)</span>
+                                </button>
+                            </div>
+
+                            <!-- EXERCISE 2 -->
+                            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between relative group hover:border-indigo-500/50 transition-all">
+                                <div>
+                                    <div class="w-full h-28 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-teal-500/10 flex items-center justify-center mb-3 relative overflow-hidden">
+                                        <i data-lucide="move-horizontal" class="w-10 h-10 text-cyan-500 group-hover:scale-110 transition-transform"></i>
+                                        <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold bg-white/80 dark:bg-slate-900/80 rounded-full text-cyan-600">20s</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-900 dark:text-white">Neck Side Stretch</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Gentle lateral neck lean. Hold 10s on each side.</p>
+                                </div>
+                                <button onclick="startExerciseModal('Neck Side Stretch', 20)" class="mt-4 w-full py-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-600 hover:text-white text-cyan-600 dark:text-cyan-300 font-bold text-xs transition-all flex items-center justify-center gap-1">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    <span>Start (20s)</span>
+                                </button>
+                            </div>
+
+                            <!-- EXERCISE 3 -->
+                            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between relative group hover:border-indigo-500/50 transition-all">
+                                <div>
+                                    <div class="w-full h-28 rounded-xl bg-gradient-to-tr from-purple-500/10 to-pink-500/10 flex items-center justify-center mb-3 relative overflow-hidden">
+                                        <i data-lucide="heart" class="w-10 h-10 text-purple-500 group-hover:pulse"></i>
+                                        <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold bg-white/80 dark:bg-slate-900/80 rounded-full text-purple-600">20s</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-900 dark:text-white">Chest Stretch</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Open arms wide and pull shoulder blades together.</p>
+                                </div>
+                                <button onclick="startExerciseModal('Chest Stretch', 20)" class="mt-4 w-full py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-600 hover:text-white text-purple-600 dark:text-purple-300 font-bold text-xs transition-all flex items-center justify-center gap-1">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    <span>Start (20s)</span>
+                                </button>
+                            </div>
+
+                            <!-- EXERCISE 4 -->
+                            <div class="glass-card rounded-2xl p-4 flex flex-col justify-between relative group hover:border-indigo-500/50 transition-all">
+                                <div>
+                                    <div class="w-full h-28 rounded-xl bg-gradient-to-tr from-emerald-500/10 to-green-500/10 flex items-center justify-center mb-3 relative overflow-hidden">
+                                        <i data-lucide="rotate-cw" class="w-10 h-10 text-emerald-500 group-hover:rotate-45 transition-transform"></i>
+                                        <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold bg-white/80 dark:bg-slate-900/80 rounded-full text-emerald-600">10 Reps</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-900 dark:text-white">Gentle Neck Rotation</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Slow circular head turns to boost cervical flexibility.</p>
+                                </div>
+                                <button onclick="startExerciseModal('Gentle Neck Rotation', 15)" class="mt-4 w-full py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-600 hover:text-white text-emerald-600 dark:text-emerald-300 font-bold text-xs transition-all flex items-center justify-center gap-1">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    <span>Start (10 Reps)</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: POSTURE MONITOR PAGE (WEBCAM & MEDIAPIPE SIMULATION) -->
+                <section id="tab-posture-monitor" class="tab-content hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="scan-face" class="w-6 h-6 text-indigo-500"></i>
+                                Real-Time Webcam AI Monitoring
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Computer vision tracking key spine and head angle vectors.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Preset posture state switcher for demonstration -->
+                            <span class="text-xs text-slate-400 font-semibold">Simulate State:</span>
+                            <button onclick="setPostureState('good')" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all">Good</button>
+                            <button onclick="setPostureState('slouch')" class="px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold hover:bg-amber-500 hover:text-white transition-all">Slouch</button>
+                            <button onclick="setPostureState('bad')" class="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold hover:bg-rose-500 hover:text-white transition-all">Forward Neck</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- WEBCAM CANVAS DISPLAY -->
+                        <div class="lg:col-span-2 glass-card rounded-3xl p-4 flex flex-col relative overflow-hidden min-h-[420px]">
+                            <!-- Simulated Webcam Feed Header -->
+                            <div class="flex justify-between items-center mb-3 px-2">
+                                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                    <span>LIVE WEBCAM FEED (MediaPipe Mesh)</span>
+                                </div>
+                                <span class="text-[11px] text-slate-400 font-mono">60 FPS • 1080p</span>
+                            </div>
+
+                            <!-- Interactive Simulation Canvas Container -->
+                            <div class="relative flex-1 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center">
+                                <!-- Background Simulated User Silhouette Image -->
+                                <img id="webcam-bg" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80" alt="Camera Stream" class="absolute inset-0 w-full h-full object-cover opacity-30 filter brightness-75">
+                                
+                                <!-- Canvas overlay for skeletal tracking -->
+                                <canvas id="skeleton-canvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+
+                                <!-- Live Warning Card Floating Overlay -->
+                                <div id="live-alert-card" class="absolute bottom-4 left-4 right-4 bg-rose-500/90 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-rose-400/30 transition-all duration-300 transform translate-y-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white/20 rounded-xl">
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h4 id="alert-card-title" class="font-extrabold text-xs uppercase tracking-wider">Ergonomic Alert</h4>
+                                            <p id="alert-card-msg" class="text-xs">Straighten your back and raise your chin slightly.</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="dismissAlertCard()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition-all">Fix Posture</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT TELEMETRY & WARNING CARDS -->
+                        <div class="space-y-4">
+                            <div class="glass-card rounded-3xl p-5 space-y-4">
+                                <h3 class="font-bold text-sm text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Live AI Telemetry</h3>
+
+                                <!-- Head Position -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500 dark:text-slate-400">Head Angle Tilt</span>
+                                        <span id="telemetry-head" class="font-bold text-emerald-500">12° (Good)</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-head" class="bg-emerald-500 h-full w-[25%] transition-all duration-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Back Posture -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500 dark:text-slate-400">Spine Curvature</span>
+                                        <span id="telemetry-spine" class="font-bold text-emerald-500">94% Aligned</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-spine" class="bg-emerald-500 h-full w-[94%] transition-all duration-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Shoulder Alignment -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500 dark:text-slate-400">Shoulder Level</span>
+                                        <span id="telemetry-shoulder" class="font-bold text-emerald-500">Balanced</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-shoulder" class="bg-emerald-500 h-full w-[98%] transition-all duration-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Screen Distance -->
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500 dark:text-slate-400">Distance from Screen</span>
+                                        <span id="telemetry-dist" class="font-bold text-emerald-500">65 cm</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-dist" class="bg-emerald-500 h-full w-[70%] transition-all duration-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- WARNING CARDS LIST -->
+                            <div class="glass-card rounded-3xl p-5 space-y-3">
+                                <h3 class="font-bold text-sm text-slate-900 dark:text-white">Active Posture Directives</h3>
+                                <div class="space-y-2 text-xs">
+                                    <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center gap-2.5">
+                                        <i data-lucide="arrow-up" class="w-4 h-4 text-amber-500 shrink-0"></i>
+                                        <span>Raise your head slightly to relieve C1-C7 neck pressure.</span>
+                                    </div>
+                                    <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 flex items-center gap-2.5">
+                                        <i data-lucide="move" class="w-4 h-4 text-blue-500 shrink-0"></i>
+                                        <span>Maintain at least 60 cm distance from monitor screen.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: VISION TEST PAGE -->
+                <section id="tab-vision-test" class="tab-content hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="eye" class="w-6 h-6 text-blue-500"></i>
+                                AI Vision Test & Acuity Evaluator
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Interactive medical-grade eye strain and Snellen visual acuity assessment.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-bold">Clinical Precision Mode</span>
+                        </div>
+                    </div>
+
+                    <!-- STEP WIZARD INDICATOR -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div id="vstep-indicator-1" class="p-3 rounded-2xl bg-blue-600 text-white font-bold text-xs flex items-center gap-2 transition-all">
+                            <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span>
+                            <span>Distance Check</span>
+                        </div>
+                        <div id="vstep-indicator-2" class="p-3 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-500 font-bold text-xs flex items-center gap-2 transition-all">
+                            <span class="w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-[10px]">2</span>
+                            <span>Chart Reading</span>
+                        </div>
+                        <div id="vstep-indicator-3" class="p-3 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-500 font-bold text-xs flex items-center gap-2 transition-all">
+                            <span class="w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-[10px]">3</span>
+                            <span>Acuity Results</span>
+                        </div>
+                    </div>
+
+                    <!-- STEP 1: DISTANCE CHECK CONTAINER -->
+                    <div id="vision-step-1" class="glass-card rounded-3xl p-8 text-center space-y-6 max-w-2xl mx-auto">
+                        <div class="w-16 h-16 rounded-3xl bg-blue-500/10 text-blue-500 mx-auto flex items-center justify-center">
+                            <i data-lucide="ruler" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Camera Verification: Distance Setup</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Position yourself approximately 60–70 cm from your screen. The AI camera will calibrate your eye level.</p>
+                        </div>
+
+                        <!-- Distance Gauge -->
+                        <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span>Verified Distance:</span>
+                                <span id="vision-dist-readout" class="text-emerald-500">65 cm ✓ (Optimal)</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full w-[65%] rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <button onclick="goToVisionStep(2)" class="px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition-all">
+                            Distance Confirmed → Start Snellen Test
+                        </button>
+                    </div>
+
+                    <!-- STEP 2: SNELLEN & TUMBLING E CHART -->
+                    <div id="vision-step-2" class="glass-card rounded-3xl p-8 hidden space-y-6 max-w-3xl mx-auto text-center">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold">Level <span id="snellen-level-num">1</span> of 5</span>
+                            <span class="text-indigo-500 font-bold">Type the letters or click Tumbling E direction</span>
+                        </div>
+
+                        <!-- Snellen Letter Display Box -->
+                        <div class="p-8 rounded-3xl bg-white text-slate-950 border-4 border-slate-200 shadow-inner flex flex-col items-center justify-center min-h-[220px]">
+                            <div id="snellen-target-text" class="font-extrabold tracking-widest font-mono text-6xl transition-all duration-300">
+                                E
+                            </div>
+                        </div>
+
+                        <!-- Directional Arrow Buttons for Tumbling E -->
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="text-xs text-slate-400 mb-1">Select the open direction of the character:</span>
+                            <div class="grid grid-cols-3 gap-2 w-48">
+                                <div></div>
+                                <button onclick="answerVision('UP')" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition-all"><i data-lucide="arrow-up" class="w-5 h-5 mx-auto"></i></button>
+                                <div></div>
+                                <button onclick="answerVision('LEFT')" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition-all"><i data-lucide="arrow-left" class="w-5 h-5 mx-auto"></i></button>
+                                <button onclick="answerVision('DOWN')" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition-all"><i data-lucide="arrow-down" class="w-5 h-5 mx-auto"></i></button>
+                                <button onclick="answerVision('RIGHT')" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition-all"><i data-lucide="arrow-right" class="w-5 h-5 mx-auto"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Direct Input Option -->
+                        <div class="flex justify-center gap-2 max-w-xs mx-auto">
+                            <input id="vision-text-input" type="text" placeholder="Or type letter..." class="w-full px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center uppercase font-bold text-sm">
+                            <button onclick="submitVisionText()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs">Submit</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: RESULTS CARD -->
+                    <div id="vision-step-3" class="glass-card rounded-3xl p-8 hidden space-y-6 max-w-2xl mx-auto text-center">
+                        <div class="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center">
+                            <i data-lucide="award" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white">Vision Assessment Complete!</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">AI estimation based on Snellen 20-foot chart scale.</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                <span class="text-xs text-slate-400 block">Estimated Acuity</span>
+                                <span class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">20/20</span>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                <span class="text-xs text-slate-400 block">Eye Fatigue Index</span>
+                                <span class="text-2xl font-extrabold text-emerald-500">Low (12%)</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-left text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                            <p class="font-bold">Recommendations:</p>
+                            <p>• Excellent visual alignment detected. Maintain the 20-20-20 rule during study sessions.</p>
+                            <p>• Ensure room ambient lighting is around 300-500 lux to eliminate monitor glare.</p>
+                        </div>
+
+                        <button onclick="goToVisionStep(1)" class="px-6 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs">
+                            Retake Vision Test
+                        </button>
+                    </div>
+                </section>
+
+                <!-- TAB 4: SCREEN TIME DETAIL PAGE -->
+                <section id="tab-screen-time" class="tab-content hidden space-y-6">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="clock" class="w-6 h-6 text-blue-500"></i>
+                            Screen Time & Focus Analytics
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Detailed digital well-being logs and break frequency.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-card rounded-3xl p-5 space-y-3">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Focus Sessions</span>
+                            <div class="text-3xl font-extrabold text-slate-900 dark:text-white">8 Sessions</div>
+                            <p class="text-xs text-emerald-500 font-semibold">+2 sessions compared to yesterday</p>
+                        </div>
+                        <div class="glass-card rounded-3xl p-5 space-y-3">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Total Break Time</span>
+                            <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">42 Mins</div>
+                            <p class="text-xs text-slate-500 font-semibold">100% target met for today</p>
+                        </div>
+                        <div class="glass-card rounded-3xl p-5 space-y-3">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Eye Strain Level</span>
+                            <div class="text-3xl font-extrabold text-emerald-500">Minimal</div>
+                            <p class="text-xs text-slate-500 font-semibold">Blink rate ~ 16 blinks/min</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: EXERCISE COACH PAGE -->
+                <section id="tab-exercise-coach" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="activity" class="w-6 h-6 text-indigo-500"></i>
+                                Guided Ergonomic Exercises
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Targeted stretches designed by physical therapists for desk workers.</p>
+                        </div>
+                        <div class="px-4 py-2 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center gap-2">
+                            <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+                            <span>5 Day Streak!</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="glass-card rounded-3xl p-5 flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                                <i data-lucide="refresh-cw" class="w-8 h-8"></i>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Shoulder & Trapezius Rolls</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Release tight shoulder blades caused by typing.</p>
+                                <div class="flex items-center gap-3 pt-2">
+                                    <span class="text-[11px] font-bold text-indigo-500">30 seconds</span>
+                                    <button onclick="startExerciseModal('Shoulder Rolls', 30)" class="px-3 py-1 bg-indigo-600 text-white rounded-xl text-xs font-bold">Start</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-3xl p-5 flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
+                                <i data-lucide="move-horizontal" class="w-8 h-8"></i>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Neck Side Stretch</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Elongate sternocleidomastoid neck muscles.</p>
+                                <div class="flex items-center gap-3 pt-2">
+                                    <span class="text-[11px] font-bold text-cyan-500">20 seconds</span>
+                                    <button onclick="startExerciseModal('Neck Side Stretch', 20)" class="px-3 py-1 bg-cyan-600 text-white rounded-xl text-xs font-bold">Start</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 6: STATISTICS PAGE (CHARTS) -->
+                <section id="tab-statistics" class="tab-content hidden space-y-6">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" class="w-6 h-6 text-purple-500"></i>
+                            Weekly Ergonomic Analytics & Trends
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Data-driven performance metrics tracking long-term postural progress.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Chart 1: Screen Time vs Posture Score -->
+                        <div class="glass-card rounded-3xl p-5 space-y-4">
+                            <h3 class="font-bold text-sm text-slate-900 dark:text-white">Daily Screen Time & Posture Score (%)</h3>
+                            <div class="h-64">
+                                <canvas id="chart-posture-trends"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Eye Exercise Completion -->
+                        <div class="glass-card rounded-3xl p-5 space-y-4">
+                            <h3 class="font-bold text-sm text-slate-900 dark:text-white">Exercise & Break Completion Rate</h3>
+                            <div class="h-64">
+                                <canvas id="chart-exercise-completion"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 7: SETTINGS PAGE -->
+                <section id="tab-settings" class="tab-content hidden space-y-6">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="settings" class="w-6 h-6 text-slate-500"></i>
+                            Settings & Preferences
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Configure AI detection sensitivity, notifications, and screen time goals.</p>
+                    </div>
+
+                    <div class="max-w-3xl space-y-4">
+                        <!-- Setting Card 1 -->
+                        <div class="glass-card rounded-3xl p-5 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Dark Mode Appearance</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Switch between light and dark UI themes.</p>
+                            </div>
+                            <button onclick="toggleDarkMode()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">Toggle Theme</button>
+                        </div>
+
+                        <!-- Setting Card 2 -->
+                        <div class="glass-card rounded-3xl p-5 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Screen Time Daily Goal</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Set maximum target hours for work sessions.</p>
+                            </div>
+                            <select class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                                <option>4 Hours</option>
+                                <option selected>6 Hours</option>
+                                <option>8 Hours</option>
+                            </select>
+                        </div>
+
+                        <!-- Setting Card 3 -->
+                        <div class="glass-card rounded-3xl p-5 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">AI Camera Sensitivity</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Sensitivity for neck slant detection alerts.</p>
+                            </div>
+                            <input type="range" min="1" max="5" value="4" class="accent-indigo-600">
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- EXERCISE MODAL POPUP -->
+    <div id="exercise-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div class="w-16 h-16 rounded-3xl bg-indigo-500/10 text-indigo-500 mx-auto flex items-center justify-center">
+                <i data-lucide="play" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h3 id="modal-ex-title" class="text-xl font-extrabold text-slate-900 dark:text-white">Shoulder Rolls</h3>
+                <p id="modal-ex-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Keep your back straight while rotating shoulders.</p>
+            </div>
+            
+            <div id="modal-timer-text" class="text-4xl font-extrabold text-indigo-600 font-mono">30s</div>
+
+            <div class="flex gap-2">
+                <button onclick="closeExerciseModal()" class="flex-1 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // GLOBAL STATE
+        let currentPostureState = 'good'; // 'good', 'slouch', 'bad'
+        let eyeTimerSeconds = 20 * 60; // 20 mins
+        let eyeTimerInterval = null;
+        let isEyeTimerRunning = false;
+        let activeTab = 'dashboard';
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initSkeletonCanvas();
+            initCharts();
+            startEyeTimer(); // auto start countdown
+        });
+
+        // TAB SWITCHING FUNCTION
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-indigo-600', 'dark:text-indigo-400', 'bg-indigo-50', 'dark:bg-indigo-950/60');
+                btn.classList.add('text-slate-600', 'dark:text-slate-400');
+            });
+
+            const targetTab = document.getElementById('tab-' + tabId);
+            if (targetTab) targetTab.classList.remove('hidden');
+
+            const navBtn = document.getElementById('nav-' + tabId);
+            if (navBtn) {
+                navBtn.classList.add('active', 'text-indigo-600', 'dark:text-indigo-400', 'bg-indigo-50', 'dark:bg-indigo-950/60');
+            }
+
+            if (tabId === 'posture-monitor') {
+                setTimeout(drawSkeleton, 100);
+            }
+        }
+
+        // DARK MODE TOGGLE
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // NOTIFICATION TOGGLE
+        function toggleNotifications() {
+            const panel = document.getElementById('notifications-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        // 20-20-20 EYE CARE TIMER LOGIC
+        function toggleEyeTimer() {
+            const btn = document.getElementById('btn-start-eyecare');
+            if (isEyeTimerRunning) {
+                clearInterval(eyeTimerInterval);
+                isEyeTimerRunning = false;
+                btn.innerHTML = `<i data-lucide="play" class="w-3.5 h-3.5"></i><span>Start Eye Timer</span>`;
+            } else {
+                startEyeTimer();
+                btn.innerHTML = `<i data-lucide="pause" class="w-3.5 h-3.5"></i><span>Pause Timer</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        function startEyeTimer() {
+            if (eyeTimerInterval) clearInterval(eyeTimerInterval);
+            isEyeTimerRunning = true;
+            eyeTimerInterval = setInterval(() => {
+                if (eyeTimerSeconds > 0) {
+                    eyeTimerSeconds--;
+                    updateEyeTimerUI();
+                } else {
+                    clearInterval(eyeTimerInterval);
+                    alert("Time for a 20-second eye break! Look 20 feet away.");
+                }
+            }, 1000);
+        }
+
+        function resetEyeTimer() {
+            eyeTimerSeconds = 20 * 60;
+            updateEyeTimerUI();
+        }
+
+        function updateEyeTimerUI() {
+            const m = Math.floor(eyeTimerSeconds / 60);
+            const s = eyeTimerSeconds % 60;
+            document.getElementById('eye-timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const pct = (eyeTimerSeconds / (20 * 60)) * 100;
+            document.getElementById('eye-timer-bar').style.width = pct + '%';
+        }
+
+        // SCREEN TIME PAUSE TOGGLE
+        function toggleScreenTimePause() {
+            const btn = document.getElementById('btn-pause-screentime');
+            if (btn.innerText === 'Pause') {
+                btn.innerText = 'Resume';
+                btn.classList.add('bg-amber-500', 'text-white');
+            } else {
+                btn.innerText = 'Pause';
+                btn.classList.remove('bg-amber-500', 'text-white');
+            }
+        }
+
+        // POSTURE STATE MODIFIER & CANVAS DRAWING
+        function setPostureState(state) {
+            currentPostureState = state;
+            const badge = document.getElementById('dashboard-posture-badge');
+            const spineLine = document.getElementById('svg-spine-line');
+            const headNode = document.getElementById('svg-head-node');
+            const alertCard = document.getElementById('live-alert-card');
+
+            if (state === 'good') {
+                badge.className = "px-2.5 py-1 text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 rounded-full flex items-center gap-1";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>Good</span>`;
+                spineLine.setAttribute('d', 'M50 20 Q50 60 50 100');
+                spineLine.setAttribute('stroke', '#10b981');
+                headNode.setAttribute('cx', '50');
+                
+                document.getElementById('dash-head-angle').innerText = '12° (Optimal)';
+                document.getElementById('dash-head-angle').className = 'font-bold text-emerald-500';
+
+                document.getElementById('telemetry-head').innerText = '12° (Good)';
+                document.getElementById('telemetry-head').className = 'font-bold text-emerald-500';
+                document.getElementById('bar-head').className = 'bg-emerald-500 h-full w-[25%] transition-all duration-500';
+
+                alertCard.classList.add('translate-y-20', 'opacity-0');
+            } else if (state === 'slouch') {
+                badge.className = "px-2.5 py-1 text-[10px] font-extrabold bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 rounded-full flex items-center gap-1";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span>Slight Slouch</span>`;
+                spineLine.setAttribute('d', 'M50 20 Q35 60 50 100');
+                spineLine.setAttribute('stroke', '#f59e0b');
+                headNode.setAttribute('cx', '42');
+
+                document.getElementById('dash-head-angle').innerText = '24° (Slouch)';
+                document.getElementById('dash-head-angle').className = 'font-bold text-amber-500';
+
+                document.getElementById('telemetry-head').innerText = '24° (Slight Slouch)';
+                document.getElementById('telemetry-head').className = 'font-bold text-amber-500';
+                document.getElementById('bar-head').className = 'bg-amber-500 h-full w-[55%] transition-all duration-500';
+
+                alertCard.classList.remove('translate-y-20', 'opacity-0');
+                document.getElementById('alert-card-title').innerText = "Slouch Warning";
+                document.getElementById('alert-card-msg').innerText = "Slight thoracic curvature detected. Pull shoulders back.";
+            } else {
+                badge.className = "px-2.5 py-1 text-[10px] font-extrabold bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 rounded-full flex items-center gap-1";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Forward Head</span>`;
+                spineLine.setAttribute('d', 'M50 20 Q20 60 50 100');
+                spineLine.setAttribute('stroke', '#f43f5e');
+                headNode.setAttribute('cx', '32');
+
+                document.getElementById('dash-head-angle').innerText = '38° (High Strain)';
+                document.getElementById('dash-head-angle').className = 'font-bold text-rose-500';
+
+                document.getElementById('telemetry-head').innerText = '38° (Forward Head)';
+                document.getElementById('telemetry-head').className = 'font-bold text-rose-500';
+                document.getElementById('bar-head').className = 'bg-rose-500 h-full w-[85%] transition-all duration-500';
+
+                alertCard.classList.remove('translate-y-20', 'opacity-0');
+                document.getElementById('alert-card-title').innerText = "Ergonomic Alert";
+                document.getElementById('alert-card-msg').innerText = "Severe neck flexion! Raise monitor height or move farther back.";
+            }
+
+            drawSkeleton();
+        }
+
+        function dismissAlertCard() {
+            document.getElementById('live-alert-card').classList.add('translate-y-20', 'opacity-0');
+        }
+
+        // CANVAS MEDIAPIPE SKELETON OVERLAY SIMULATION
+        function initSkeletonCanvas() {
+            const canvas = document.getElementById('skeleton-canvas');
+            if (!canvas) return;
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+            drawSkeleton();
+
+            window.addEventListener('resize', () => {
+                canvas.width = parent.clientWidth;
+                canvas.height = parent.clientHeight;
+                drawSkeleton();
+            });
+        }
+
+        function drawSkeleton() {
+            const canvas = document.getElementById('skeleton-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Center offsets based on state
+            let headOffsetX = 0;
+            let strokeColor = '#10b981';
+
+            if (currentPostureState === 'slouch') {
+                headOffsetX = -30;
+                strokeColor = '#f59e0b';
+            } else if (currentPostureState === 'bad') {
+                headOffsetX = -60;
+                strokeColor = '#f43f5e';
+            }
+
+            const head = { x: w * 0.5 + headOffsetX, y: h * 0.3 };
+            const neck = { x: w * 0.5, y: h * 0.42 };
+            const leftShoulder = { x: w * 0.38, y: h * 0.46 };
+            const rightShoulder = { x: w * 0.62, y: h * 0.46 };
+            const midSpine = { x: w * 0.5, y: h * 0.7 };
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = strokeColor;
+            ctx.fillStyle = strokeColor;
+
+            // Draw Spine Lines
+            ctx.beginPath();
+            ctx.moveTo(head.x, head.y);
+            ctx.lineTo(neck.x, neck.y);
+            ctx.lineTo(midSpine.x, midSpine.y);
+            ctx.stroke();
+
+            // Draw Shoulder Line
+            ctx.beginPath();
+            ctx.moveTo(leftShoulder.x, leftShoulder.y);
+            ctx.lineTo(rightShoulder.x, rightShoulder.y);
+            ctx.stroke();
+
+            // Draw Joint Nodes
+            [head, neck, leftShoulder, rightShoulder, midSpine].forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = strokeColor;
+            });
+
+            // Target Box around head
+            ctx.strokeStyle = strokeColor;
+            ctx.setLineDash([4, 4]);
+            ctx.strokeRect(head.x - 25, head.y - 25, 50, 50);
+            ctx.setLineDash([]);
+        }
+
+        // VISION TEST INTERACTIVE LOGIC
+        let snellenLevel = 1;
+        const snellenLetters = ['E', 'FP', 'TOZ', 'LPED', 'PECFD'];
+
+        function goToVisionStep(step) {
+            document.getElementById('vision-step-1').classList.add('hidden');
+            document.getElementById('vision-step-2').classList.add('hidden');
+            document.getElementById('vision-step-3').classList.add('hidden');
+
+            document.getElementById(`vision-step-${step}`).classList.remove('hidden');
+
+            // Highlight Step Indicator
+            [1, 2, 3].forEach(s => {
+                const ind = document.getElementById(`vstep-indicator-${s}`);
+                if (s === step) {
+                    ind.className = "p-3 rounded-2xl bg-blue-600 text-white font-bold text-xs flex items-center gap-2 transition-all";
+                } else {
+                    ind.className = "p-3 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-500 font-bold text-xs flex items-center gap-2 transition-all";
+                }
+            });
+        }
+
+        function answerVision(dir) {
+            nextSnellenLevel();
+        }
+
+        function submitVisionText() {
+            nextSnellenLevel();
+        }
+
+        function nextSnellenLevel() {
+            snellenLevel++;
+            if (snellenLevel > snellenLetters.length) {
+                snellenLevel = 1;
+                goToVisionStep(3);
+            } else {
+                document.getElementById('snellen-level-num').innerText = snellenLevel;
+                const target = document.getElementById('snellen-target-text');
+                target.innerText = snellenLetters[snellenLevel - 1];
+                // Scale letter size smaller
+                const fontSizes = ['text-6xl', 'text-5xl', 'text-3xl', 'text-xl', 'text-xs'];
+                target.className = `font-extrabold tracking-widest font-mono transition-all duration-300 ${fontSizes[snellenLevel - 1]}`;
+            }
+        }
+
+        // EXERCISE MODAL TIMER
+        let exTimerInterval;
+        function startExerciseModal(title, duration) {
+            document.getElementById('modal-ex-title').innerText = title;
+            document.getElementById('modal-timer-text').innerText = duration + 's';
+            document.getElementById('exercise-modal').classList.remove('hidden');
+            document.getElementById('exercise-modal').classList.add('flex');
+
+            let rem = duration;
+            if (exTimerInterval) clearInterval(exTimerInterval);
+            exTimerInterval = setInterval(() => {
+                rem--;
+                if (rem <= 0) {
+                    clearInterval(exTimerInterval);
+                    document.getElementById('modal-timer-text').innerText = 'Completed! ✓';
+                } else {
+                    document.getElementById('modal-timer-text').innerText = rem + 's';
+                }
+            }, 1000);
+        }
+
+        function closeExerciseModal() {
+            if (exTimerInterval) clearInterval(exTimerInterval);
+            document.getElementById('exercise-modal').classList.add('hidden');
+            document.getElementById('exercise-modal').classList.remove('flex');
+        }
+
+        // INITIALIZE CHART.JS
+        function initCharts() {
+            const ctx1 = document.getElementById('chart-posture-trends');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Good Posture %',
+                            data: [72, 80, 85, 78, 92, 88, 94],
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { min: 50, max: 100 }
+                        }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('chart-exercise-completion');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Stretches Completed',
+                            data: [4, 6, 5, 8, 7, 4, 9],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
