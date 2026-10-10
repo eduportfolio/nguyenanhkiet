@@ -249,6 +249,10 @@ section {
 }
 
 /* HERO */
+/* =========================================================
+   HERO
+========================================================= */
+
 #hero {
     min-height: 100vh;
     display: flex;
@@ -257,29 +261,298 @@ section {
     padding-top: 100px;
     padding-bottom: 80px;
     position: relative;
+    overflow: hidden;
 }
+
+
+/* =========================================================
+   TECHNICAL BACKGROUND
+========================================================= */
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.hero-grid {
+    position: absolute;
+    inset: -100px;
+
+    background-image:
+        linear-gradient(rgba(6, 182, 212, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.045) 1px, transparent 1px);
+
+    background-size: 45px 45px;
+
+    transform: perspective(700px) rotateX(55deg) scale(1.5);
+    transform-origin: center bottom;
+
+    opacity: 0.65;
+
+    mask-image: linear-gradient(to bottom,
+            transparent 0%,
+            black 35%,
+            black 80%,
+            transparent 100%);
+}
+
+
+/* =========================================================
+   CIRCUIT LINES
+========================================================= */
+
+.circuit {
+    position: absolute;
+    opacity: 0.35;
+}
+
+.circuit::before,
+.circuit::after {
+    content: '';
+    position: absolute;
+    background: var(--cyan);
+}
+
+.circuit-1 {
+    width: 320px;
+    height: 160px;
+    right: 4%;
+    top: 17%;
+}
+
+.circuit-1::before {
+    width: 260px;
+    height: 1px;
+    top: 80px;
+    left: 0;
+}
+
+.circuit-1::after {
+    width: 1px;
+    height: 80px;
+    left: 260px;
+    top: 0;
+}
+
+.circuit-2 {
+    width: 300px;
+    height: 180px;
+    left: -30px;
+    bottom: 15%;
+}
+
+.circuit-2::before {
+    width: 240px;
+    height: 1px;
+    top: 80px;
+    left: 0;
+}
+
+.circuit-2::after {
+    width: 1px;
+    height: 90px;
+    left: 240px;
+    top: -10px;
+}
+
+
+/* moving circuit nodes */
+
+.node {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--cyan);
+
+    animation: circuitPulse 2.5s infinite;
+}
+
+.circuit-1 .node:nth-child(1) {
+    left: 30px;
+    top: 77px;
+}
+
+.circuit-1 .node:nth-child(2) {
+    left: 150px;
+    top: 77px;
+    animation-delay: .8s;
+}
+
+.circuit-1 .node:nth-child(3) {
+    left: 257px;
+    top: 77px;
+    animation-delay: 1.5s;
+}
+
+.circuit-2 .node:nth-child(1) {
+    left: 70px;
+    top: 77px;
+}
+
+.circuit-2 .node:nth-child(2) {
+    left: 237px;
+    top: 77px;
+    animation-delay: 1s;
+}
+
+@keyframes circuitPulse {
+
+    0%,
+    100% {
+        opacity: .25;
+        transform: scale(.7);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+}
+
+
+/* =========================================================
+   RADAR RINGS
+========================================================= */
+
+.scan-ring {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+
+    right: 7%;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    border: 1px solid rgba(6, 182, 212, .08);
+    border-radius: 50%;
+
+    animation: ringRotate 18s linear infinite;
+}
+
+.scan-ring::before {
+    content: '';
+    position: absolute;
+    inset: 35px;
+
+    border: 1px dashed rgba(6, 182, 212, .12);
+    border-radius: 50%;
+}
+
+.scan-ring::after {
+    content: '';
+    position: absolute;
+
+    width: 50%;
+    height: 1px;
+
+    left: 50%;
+    top: 50%;
+
+    transform-origin: left center;
+
+    background: linear-gradient(90deg,
+            var(--cyan),
+            transparent);
+
+    opacity: .5;
+}
+
+.ring-2 {
+    width: 680px;
+    height: 680px;
+
+    right: 1%;
+
+    animation-direction: reverse;
+    animation-duration: 30s;
+
+    opacity: .4;
+}
+
+@keyframes ringRotate {
+    from {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   HERO CONTENT
+========================================================= */
 
 .hero-inner {
     display: flex;
     align-items: center;
-    gap: 60px;
+    gap: 80px;
+
+    position: relative;
+    z-index: 2;
 }
 
 .hero-left {
     flex: 1;
     min-width: 0;
+
+    animation: heroTextIn 1s ease-out both;
+}
+
+@keyframes heroTextIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .hero-right {
     flex-shrink: 0;
+
+    animation: heroVisualIn 1.2s ease-out .15s both;
 }
+
+@keyframes heroVisualIn {
+
+    from {
+        opacity: 0;
+        transform: translateX(35px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
 
 .hero-status {
     font-family: 'Share Tech Mono', monospace;
     font-size: 12px;
+
     color: var(--cyan);
-    letter-spacing: 0.18em;
+
+    letter-spacing: .18em;
+
     margin-bottom: 20px;
+
     display: flex;
     align-items: center;
     gap: 10px;
@@ -288,9 +561,13 @@ section {
 .status-dot {
     width: 7px;
     height: 7px;
+
     border-radius: 50%;
+
     background: #22c55e;
+
     box-shadow: 0 0 6px #22c55e;
+
     animation: pulse 2s infinite;
 }
 
@@ -299,119 +576,367 @@ section {
     0%,
     100% {
         opacity: 1;
+        box-shadow: 0 0 6px #22c55e;
     }
 
     50% {
-        opacity: 0.4;
+        opacity: .4;
+        box-shadow: 0 0 14px #22c55e;
     }
 }
 
+
+/* =========================================================
+   NAME
+========================================================= */
+
 .hero-name {
     font-family: 'Rajdhani', sans-serif;
+
     font-size: clamp(42px, 7vw, 80px);
+
     font-weight: 700;
-    line-height: 1.0;
-    letter-spacing: 0.04em;
+
+    line-height: 1;
+
+    letter-spacing: .04em;
+
     color: var(--white);
+
     margin-bottom: 6px;
+
+    text-shadow:
+        0 0 35px rgba(6, 182, 212, .08);
 }
 
 .hero-name .accent {
     color: var(--cyan);
+
+    text-shadow:
+        0 0 20px rgba(6, 182, 212, .25);
 }
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
 
 .hero-subtitle {
     font-family: 'Rajdhani', sans-serif;
+
     font-size: clamp(18px, 3vw, 26px);
+
     font-weight: 400;
+
     color: var(--text2);
-    letter-spacing: 0.08em;
+
+    letter-spacing: .08em;
+
     margin-bottom: 24px;
 }
 
+
+/* =========================================================
+   TAGS
+========================================================= */
+
 .hero-tags {
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 10px;
+
     margin-bottom: 40px;
 }
 
 .tag {
     font-family: 'Share Tech Mono', monospace;
+
     font-size: 11px;
+
     padding: 5px 14px;
+
     border: 1px solid var(--tag-border);
+
     background: var(--tag-bg);
+
     color: var(--blue-light);
-    letter-spacing: 0.1em;
+
+    letter-spacing: .1em;
+
     border-radius: 2px;
+
+    transition:
+        border-color .25s,
+        color .25s,
+        background .25s,
+        transform .25s;
+}
+
+.tag:hover {
+    border-color: var(--cyan);
+
+    color: var(--cyan);
+
+    background: rgba(6, 182, 212, .08);
+
+    transform: translateY(-2px);
 }
 
 .tag.cyan {
-    border-color: rgba(6, 182, 212, 0.4);
-    background: rgba(6, 182, 212, 0.08);
+    border-color: rgba(6, 182, 212, .4);
+
+    background: rgba(6, 182, 212, .08);
+
     color: var(--cyan);
 }
 
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
 .hero-desc {
     font-size: 15px;
+
     color: var(--text2);
+
     max-width: 560px;
+
     line-height: 1.8;
+
     border-left: 2px solid var(--line2);
+
     padding-left: 18px;
 }
 
-.hero-graphic {
-    position: absolute;
-    right: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 320px;
-    height: 320px;
-    opacity: 0.07;
-    pointer-events: none;
+
+/* =========================================================
+   SYSTEM STATUS
+========================================================= */
+
+.hero-system {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 28px;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 10px;
+
+    letter-spacing: .14em;
+
+    color: var(--text2);
 }
 
-/* AVATAR AREA */
-.avatar-wrap {
-    width: 280px;
-    height: 340px;
-    border: 1.5px solid var(--line2);
-    border-radius: 2px;
-    background: var(--tag-bg);
+.system-line {
+    width: 55px;
+    height: 1px;
+
+    background: var(--line2);
+
     position: relative;
     overflow: hidden;
-    margin-bottom: 0;
+}
+
+.system-line::after {
+    content: '';
+
+    position: absolute;
+
+    width: 15px;
+    height: 1px;
+
+    background: var(--cyan);
+
+    animation: systemScan 2s linear infinite;
+}
+
+@keyframes systemScan {
+
+    from {
+        left: -15px;
+    }
+
+    to {
+        left: 55px;
+    }
+}
+
+.system-online {
+    color: #22c55e;
+}
+
+
+/* =========================================================
+   AVATAR / ENGINEERING HUD
+========================================================= */
+
+.hero-visual {
+    position: relative;
+
+    width: 350px;
+    height: 410px;
+}
+
+.avatar-wrap {
+    position: absolute;
+
+    width: 280px;
+    height: 340px;
+
+    left: 35px;
+    top: 30px;
+
+    border: 1.5px solid var(--line2);
+
+    border-radius: 2px;
+
+    background: var(--tag-bg);
+
+    overflow: hidden;
+
+    box-shadow:
+        0 0 40px rgba(6, 182, 212, .05),
+        inset 0 0 30px rgba(6, 182, 212, .04);
 }
 
 .avatar-wrap::before {
     content: '';
+
     position: absolute;
+
     inset: 8px;
-    border: 1px dashed rgba(6, 182, 212, 0.2);
-    border-radius: 1px;
-    z-index: 1;
+
+    border: 1px dashed rgba(6, 182, 212, .2);
+
+    z-index: 3;
+
     pointer-events: none;
 }
+
+
+/* image */
 
 .avatar-img {
     width: 100%;
     height: 100%;
+
     object-fit: cover;
+
     display: block;
+
     object-position: center 10%;
+
+    filter:
+        saturate(.85) contrast(1.05);
+
+    transition:
+        transform .7s ease,
+        filter .7s ease;
 }
+
+.avatar-wrap:hover .avatar-img {
+    transform: scale(1.025);
+
+    filter:
+        saturate(1) contrast(1.08);
+}
+
+
+/* =========================================================
+   AVATAR SCAN LINE
+========================================================= */
+
+.avatar-scan {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    top: -5px;
+
+    height: 2px;
+
+    z-index: 4;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            var(--cyan),
+            transparent);
+
+    box-shadow:
+        0 0 12px var(--cyan);
+
+    animation: avatarScan 4s ease-in-out infinite;
+}
+
+@keyframes avatarScan {
+
+    0% {
+        top: 0;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: .8;
+    }
+
+    50% {
+        opacity: .8;
+    }
+
+    90% {
+        opacity: .2;
+    }
+
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+
+/* image overlay */
+
+.avatar-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(180deg,
+            transparent 65%,
+            rgba(6, 182, 212, .06));
+}
+
+
+/* =========================================================
+   CORNER MARKS
+========================================================= */
 
 .corner-mark {
     position: absolute;
-    width: 10px;
-    height: 10px;
+
+    width: 13px;
+    height: 13px;
+
+    z-index: 5;
 }
 
 .corner-mark.tl {
     top: -1px;
     left: -1px;
+
     border-top: 2px solid var(--cyan);
     border-left: 2px solid var(--cyan);
 }
@@ -419,6 +944,7 @@ section {
 .corner-mark.tr {
     top: -1px;
     right: -1px;
+
     border-top: 2px solid var(--cyan);
     border-right: 2px solid var(--cyan);
 }
@@ -426,6 +952,7 @@ section {
 .corner-mark.bl {
     bottom: -1px;
     left: -1px;
+
     border-bottom: 2px solid var(--cyan);
     border-left: 2px solid var(--cyan);
 }
@@ -433,8 +960,206 @@ section {
 .corner-mark.br {
     bottom: -1px;
     right: -1px;
+
     border-bottom: 2px solid var(--cyan);
     border-right: 2px solid var(--cyan);
+}
+
+
+/* =========================================================
+   FLOATING HUD LABELS
+========================================================= */
+
+.hud-label {
+    position: absolute;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    letter-spacing: .12em;
+
+    color: var(--text2);
+
+    border: 1px solid var(--line2);
+
+    background: var(--tag-bg);
+
+    padding: 7px 10px;
+
+    z-index: 6;
+
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+}
+
+.hud-label b {
+    color: var(--cyan);
+
+    font-weight: 400;
+}
+
+.label-top {
+    top: 0;
+    left: 0;
+}
+
+.label-right {
+    right: 0;
+    top: 155px;
+}
+
+.label-bottom {
+    bottom: 5px;
+    left: 30px;
+}
+
+
+/* =========================================================
+   COORDINATES
+========================================================= */
+
+.hud-coordinates {
+    position: absolute;
+
+    right: 15px;
+    bottom: 8px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 8px;
+
+    color: var(--text2);
+
+    letter-spacing: .1em;
+
+    opacity: .65;
+}
+
+
+/* =========================================================
+   HERO BOTTOM
+========================================================= */
+
+.hero-bottom {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: 25px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    letter-spacing: .16em;
+
+    color: var(--text2);
+
+    opacity: .55;
+
+    z-index: 3;
+}
+
+.hero-scroll {
+    color: var(--cyan);
+
+    animation: scrollPulse 2s infinite;
+}
+
+@keyframes scrollPulse {
+
+    0%,
+    100% {
+        opacity: .45;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    #hero {
+        padding-top: 120px;
+    }
+
+    .hero-inner {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 50px;
+    }
+
+    .hero-right {
+        align-self: center;
+    }
+
+    .hero-visual {
+        transform: scale(.9);
+
+        transform-origin: top center;
+
+        margin-bottom: -40px;
+    }
+
+    .scan-ring {
+        right: -250px;
+    }
+
+    .ring-2 {
+        right: -350px;
+    }
+
+    .hero-bottom {
+        display: none;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .hero-visual {
+        transform: scale(.75);
+
+        margin-left: -40px;
+
+        margin-bottom: -90px;
+    }
+
+    .hero-name {
+        font-size: 48px;
+    }
+
+    .hero-tags {
+        gap: 7px;
+    }
+
+    .tag {
+        font-size: 9px;
+        padding: 5px 9px;
+    }
 }
 
 /* CARDS */

@@ -1,23 +1,35 @@
-// Ligh/dark theme switch  
+// Light/dark theme switch
 const btn = document.getElementById('themeToggle');
+
+if (btn) {
   btn.addEventListener('click', () => {
     document.body.classList.toggle('light');
   });
+}
 
-  const reveals = document.querySelectorAll('.reveal');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        obs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.08 });
+
+// Reveal sections
+const reveals = document.querySelectorAll('.reveal');
+
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
 reveals.forEach(r => obs.observe(r));
-  
-// Lightbox (clickable image)
+
+
+// ============================================
+// LIGHTBOX
+// ============================================
+
 const lightbox = document.createElement('div');
 lightbox.id = 'lightbox';
+
 lightbox.innerHTML = `
   <img id="lightbox-img" src="" alt="">
   <span id="lightbox-close">✕</span>
@@ -25,67 +37,252 @@ lightbox.innerHTML = `
   <button id="lightbox-next">&#8594;</button>
   <div id="lightbox-counter"></div>
 `;
+
 document.body.appendChild(lightbox);
 
 let currentGallery = [];
 let currentIndex = 0;
 
+
 function openLightbox(imgs, index) {
   currentGallery = imgs;
   currentIndex = index;
+
   updateLightbox();
+
   lightbox.classList.add('active');
 }
 
+
 function updateLightbox() {
-  document.getElementById('lightbox-img').src = currentGallery[currentIndex];
-  document.getElementById('lightbox-counter').textContent =
-    currentGallery.length > 1 ? `${currentIndex + 1} / ${currentGallery.length}` : '';
-  document.getElementById('lightbox-prev').style.display = currentGallery.length > 1 ? 'flex' : 'none';
-  document.getElementById('lightbox-next').style.display = currentGallery.length > 1 ? 'flex' : 'none';
+  const lightboxImg = document.getElementById('lightbox-img');
+  const counter = document.getElementById('lightbox-counter');
+  const prev = document.getElementById('lightbox-prev');
+  const next = document.getElementById('lightbox-next');
+
+  if (!currentGallery.length) return;
+
+  lightboxImg.src = currentGallery[currentIndex];
+
+  counter.textContent =
+    currentGallery.length > 1
+      ? `${currentIndex + 1} / ${currentGallery.length}`
+      : '';
+
+  prev.style.display =
+    currentGallery.length > 1 ? 'flex' : 'none';
+
+  next.style.display =
+    currentGallery.length > 1 ? 'flex' : 'none';
 }
 
-function closeLightbox() { lightbox.classList.remove('active'); }
+
+function closeLightbox() {
+  lightbox.classList.remove('active');
+}
+
+
+// ============================================
+// IMAGE CLICK HANDLER
+// ============================================
 
 document.body.addEventListener('click', e => {
-  const img = e.target.closest('.card-img, .rp-img, .avatar-img');
-  if (img && img.src) { openLightbox([img.src], 0); return; }
 
-  const galleryImg = e.target.closest('.activity-gallery img');
-  if (galleryImg && galleryImg.src) {
-    const allImgs = [...galleryImg.closest('.activity-gallery').querySelectorAll('img')]
-      .filter(i => i.src && !i.src.endsWith(location.href)); // lọc src rỗng
-    const index = allImgs.indexOf(galleryImg);
-    openLightbox(allImgs.map(i => i.src), index);
+  // ------------------------------------------
+  // 1. Regular single images
+  // ------------------------------------------
+
+  const normalImg = e.target.closest(
+    '.card-img, .rp-img, .avatar-img'
+  );
+
+  if (normalImg && normalImg.src) {
+    openLightbox([normalImg.src], 0);
+    return;
   }
+
+
+  // ------------------------------------------
+  // 2. Activity galleries
+  // ------------------------------------------
+
+  const activityImg = e.target.closest(
+    '.activity-gallery img'
+  );
+
+  if (activityImg && activityImg.src) {
+
+    const gallery = activityImg.closest(
+      '.activity-gallery'
+    );
+
+    const allImgs = [
+      ...gallery.querySelectorAll('img')
+    ].filter(img => img.src);
+
+    const index = allImgs.indexOf(activityImg);
+
+    openLightbox(
+      allImgs.map(img => img.src),
+      index
+    );
+
+    return;
+  }
+
+
+  // ------------------------------------------
+  // 3. INTERNSHIP GALLERY
+  // ------------------------------------------
+  // This is the important fix.
+  //
+  // Any image inside .internship-gallery
+  // can now be opened and navigated.
+
+  const internshipImg = e.target.closest(
+    '.internship-gallery img'
+  );
+
+  if (internshipImg && internshipImg.src) {
+
+    const gallery = internshipImg.closest(
+      '.internship-gallery'
+    );
+
+    const allImgs = [
+      ...gallery.querySelectorAll('img')
+    ].filter(img => img.src);
+
+    const index = allImgs.indexOf(
+      internshipImg
+    );
+
+    openLightbox(
+      allImgs.map(img => img.src),
+      index
+    );
+
+    return;
+  }
+
 });
 
-document.getElementById('lightbox-prev').addEventListener('click', e => {
-  e.stopPropagation();
-  currentIndex = (currentIndex - 1 + currentGallery.length) % currentGallery.length;
-  updateLightbox();
-});
 
-document.getElementById('lightbox-next').addEventListener('click', e => {
-  e.stopPropagation();
-  currentIndex = (currentIndex + 1) % currentGallery.length;
-  updateLightbox();
-});
+// ============================================
+// LIGHTBOX NAVIGATION
+// ============================================
 
-document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', e => {
-  if (!lightbox.classList.contains('active')) return;
-  if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowLeft') { currentIndex = (currentIndex - 1 + currentGallery.length) % currentGallery.length; updateLightbox(); }
-  if (e.key === 'ArrowRight') { currentIndex = (currentIndex + 1) % currentGallery.length; updateLightbox(); }
-});
+document
+  .getElementById('lightbox-prev')
+  .addEventListener('click', e => {
 
-// Activities galary
-document.querySelectorAll('.activity-item').forEach(item => {
-  item.addEventListener('click', e => {
-    if (e.target.closest('#lightbox')) return;
-    if (e.target.closest('.activity-gallery')) return;
-    item.classList.toggle('open');
+    e.stopPropagation();
+
+    if (!currentGallery.length) return;
+
+    currentIndex =
+      (currentIndex - 1 + currentGallery.length)
+      % currentGallery.length;
+
+    updateLightbox();
   });
+
+
+document
+  .getElementById('lightbox-next')
+  .addEventListener('click', e => {
+
+    e.stopPropagation();
+
+    if (!currentGallery.length) return;
+
+    currentIndex =
+      (currentIndex + 1)
+      % currentGallery.length;
+
+    updateLightbox();
+  });
+
+
+// ============================================
+// CLOSE LIGHTBOX
+// ============================================
+
+document
+  .getElementById('lightbox-close')
+  .addEventListener('click', closeLightbox);
+
+
+lightbox.addEventListener('click', e => {
+
+  if (e.target === lightbox) {
+    closeLightbox();
+  }
+
 });
+
+
+// ============================================
+// KEYBOARD CONTROL
+// ============================================
+
+document.addEventListener('keydown', e => {
+
+  if (!lightbox.classList.contains('active')) {
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    closeLightbox();
+  }
+
+  if (e.key === 'ArrowLeft') {
+
+    if (!currentGallery.length) return;
+
+    currentIndex =
+      (currentIndex - 1 + currentGallery.length)
+      % currentGallery.length;
+
+    updateLightbox();
+  }
+
+  if (e.key === 'ArrowRight') {
+
+    if (!currentGallery.length) return;
+
+    currentIndex =
+      (currentIndex + 1)
+      % currentGallery.length;
+
+    updateLightbox();
+  }
+
+});
+
+
+// ============================================
+// ACTIVITY ITEM EXPAND / COLLAPSE
+// ============================================
+
+document
+  .querySelectorAll('.activity-item')
+  .forEach(item => {
+
+    item.addEventListener('click', e => {
+
+      // Don't toggle when clicking lightbox
+      if (e.target.closest('#lightbox')) {
+        return;
+      }
+
+      // Don't toggle when clicking an image
+      if (e.target.closest('.activity-gallery')) {
+        return;
+      }
+
+      item.classList.toggle('open');
+
+    });
+
+  });
